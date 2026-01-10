@@ -280,7 +280,7 @@ func scrapeBotsMode(data *RCEData) {
 	if len(data.Bots) == 0 {
 		log.Println("Extracting bot IDs from existing events and rankings...")
 		extractBotsAndTeams(data)
-		
+
 		// If still no bots, try to scrape rankings
 		if len(data.Bots) == 0 {
 			log.Println("No bots found in existing data. Scraping from rankings...")
