@@ -1,0 +1,23 @@
+{
+	"name": "robotregistry",
+	"version": "1.0.0",
+	"description": "Robot Combat Events Registry",
+	"private": true,
+	"scripts": {
+		"dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+		"dev:backend": "cd backend && go run main.go",
+		"dev:frontend": "cd frontend && pnpm dev",
+		"build": "npm run build:frontend && npm run build:backend",
+		"build:frontend": "cd frontend && pnpm install && pnpm run build:prod",
+		"build:backend": "cd backend && go build -o ../robotregistry main.go",
+		"start": "NODE_ENV=production ./robotregistry",
+		"scrape": "cd scraper && go run main.go",
+		"scrape:all": "cd scraper && ./scraper -mode=all",
+		"scrape:bots": "cd scraper && ./scraper -mode=bots",
+		"scrape:rankings": "cd scraper && ./scraper -mode=rankings",
+		"install": "cd frontend && pnpm install && cd ../backend && go mod download && cd ../scraper && go mod download"
+	},
+	"devDependencies": {
+		"concurrently": "^8.2.2"
+	}
+}
