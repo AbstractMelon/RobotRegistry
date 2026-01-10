@@ -165,6 +165,9 @@ func main() {
 	log.Println("Starting RCE scraper...")
 	log.Printf("Mode: %s, Output: %s\n", *scrapeMode, *outputFile)
 	log.Printf("Current season year: %d, Only ranked: %v\n", seasonYear, *onlyRanked)
+	if !*onlyRanked {
+		log.Println("Note: Scraping ALL bots (not just ranked ones)")
+	}
 
 	data := RCEData{
 		Events:    []Event{},
@@ -269,15 +272,30 @@ func scrapeBotsMode(data *RCEData) {
 	// Load existing data if available
 	if err := loadExistingData(data, *outputFile); err != nil {
 		log.Printf("No existing data found: %v\n", err)
+		log.Println("Tip: Run with -mode=all or -mode=events first to gather event data")
+		return
+	}
+
+	// Extract bot IDs from events and rankings if bots map is empty
+	if len(data.Bots) == 0 {
+		log.Println("Extracting bot IDs from existing events and rankings...")
+		extractBotsAndTeams(data)
+		
+		// If still no bots, try to scrape rankings
+		if len(data.Bots) == 0 {
+			log.Println("No bots found in existing data. Scraping from rankings...")
+			rankings := scrapeRankings()
+			data.Rankings = rankings
+			extractBotsFromRankings(data)
+		}
 	}
 
 	if len(data.Bots) == 0 {
-		log.Println("No bots found in existing data. Scraping from rankings...")
-		rankings := scrapeRankings()
-		data.Rankings = rankings
-		extractBotsFromRankings(data)
+		log.Println("Warning: No bots found to scrape. Make sure you have event or ranking data.")
+		return
 	}
 
+	log.Printf("Found %d bots to scrape details for\n", len(data.Bots))
 	log.Println("Scraping detailed bot information...")
 	scrapeBotDetails(data)
 }
