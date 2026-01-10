@@ -26,7 +26,7 @@ cd ..
 # Build backend
 echo "Building backend..."
 cd backend
-go build -o ../robotregistry main.go
+go build -o ../robot-registry main.go
 cd ..
 
 # Build scraper
@@ -37,8 +37,8 @@ cd ..
 
 echo "Build complete!"
 echo ""
-echo "Production binary: ./robotregistry"
+echo "Production binary: ./robot-registry"
 echo "Scraper binary: ./scraper-bin"
 echo ""
 echo "To run in production:"
-echo "  ./robotregistry"
+echo "  ./robot-registry"

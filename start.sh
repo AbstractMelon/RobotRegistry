@@ -9,7 +9,7 @@ if [ -f .env ]; then
 fi
 
 # Check if binary exists
-if [ ! -f "./robotregistry" ]; then
+if [ ! -f "./robot-registry" ]; then
     echo "Backend binary not found. Running build script..."
     ./build.sh
 fi
