@@ -169,6 +169,7 @@ func main() {
 		log.Println("Note: Scraping ALL bots (not just ranked ones)")
 	}
 
+	// Initialize data structure
 	data := RCEData{
 		Events:    []Event{},
 		Bots:      make(map[string]Bot),
@@ -176,6 +177,19 @@ func main() {
 		Rankings:  make(map[string][]Bot),
 		ScrapedAt: time.Now(),
 	}
+
+	// Load existing data if available (except for 'all' mode which rebuilds everything)
+	if *scrapeMode != "all" {
+		if err := loadExistingData(&data, *outputFile); err != nil {
+			log.Printf("No existing data found, starting fresh: %v\n", err)
+		} else {
+			log.Println("Loaded existing data successfully")
+			log.Printf("Existing data: %d events, %d bots, %d teams, %d weight classes\n",
+				len(data.Events), len(data.Bots), len(data.Teams), len(data.Rankings))
+		}
+	}
+	// Update scrape timestamp
+	data.ScrapedAt = time.Now()
 
 	// Setup signal handling for graceful shutdown
 	sigChan := make(chan os.Signal, 1)
@@ -248,32 +262,50 @@ func scrapeAll(data *RCEData) {
 func scrapeEventsMode(data *RCEData) {
 	log.Println("Scraping events only...")
 	events := scrapeEventPages()
+
+	// Replace events (events are time-sensitive and should be refreshed)
 	data.Events = events
 	data.TotalPages = len(events)
 	log.Printf("Found %d events\n", len(events))
 
-	// Extract basic bot and team info from events
+	// Extract basic bot and team info from events (merge with existing)
 	log.Println("Extracting bots and teams from events...")
+	if data.Bots == nil {
+		data.Bots = make(map[string]Bot)
+	}
+	if data.Teams == nil {
+		data.Teams = make(map[string]Team)
+	}
 	extractBotsAndTeamsFromEvents(data)
 }
 
 func scrapeRankingsMode(data *RCEData) {
 	log.Println("Scraping rankings only...")
 	rankings := scrapeRankings()
-	data.Rankings = rankings
 
-	// Extract bot info from rankings
-	log.Println("Extracting bots from rankings...")
-	extractBotsFromRankings(data)
+	// Merge rankings instead of replacing
+	if data.Rankings == nil {
+		data.Rankings = make(map[string][]Bot)
+	}
+	for weightClass, bots := range rankings {
+		log.Printf("Updating rankings for %s (%d bots)\n", weightClass, len(bots))
+		data.Rankings[weightClass] = bots
+	}
+
+	// Update bot info from rankings (merge, don't replace)
+	log.Println("Updating bots from rankings...")
+	if data.Bots == nil {
+		data.Bots = make(map[string]Bot)
+	}
+	mergeBotsFromRankings(data, rankings)
 }
 
 func scrapeBotsMode(data *RCEData) {
-	log.Println("Scraping bots mode - requires existing data...")
-	// Load existing data if available
-	if err := loadExistingData(data, *outputFile); err != nil {
-		log.Printf("No existing data found: %v\n", err)
-		log.Println("Tip: Run with -mode=all or -mode=events first to gather event data")
-		return
+	log.Println("Scraping bots mode...")
+
+	// Ensure bots map is initialized
+	if data.Bots == nil {
+		data.Bots = make(map[string]Bot)
 	}
 
 	// Extract bot IDs from events and rankings if bots map is empty
@@ -285,36 +317,43 @@ func scrapeBotsMode(data *RCEData) {
 		if len(data.Bots) == 0 {
 			log.Println("No bots found in existing data. Scraping from rankings...")
 			rankings := scrapeRankings()
-			data.Rankings = rankings
-			extractBotsFromRankings(data)
+			// Merge rankings
+			if data.Rankings == nil {
+				data.Rankings = make(map[string][]Bot)
+			}
+			for weightClass, bots := range rankings {
+				data.Rankings[weightClass] = bots
+			}
+			mergeBotsFromRankings(data, rankings)
 		}
 	}
 
 	if len(data.Bots) == 0 {
 		log.Println("Warning: No bots found to scrape. Make sure you have event or ranking data.")
+		log.Println("Tip: Run with -mode=rankings or -mode=events first to gather bot IDs")
 		return
 	}
 
-	log.Printf("Found %d bots to scrape details for\n", len(data.Bots))
+	log.Printf("Updating detailed information for %d bots...\n", len(data.Bots))
 	log.Println("Scraping detailed bot information...")
 	scrapeBotDetails(data)
 }
 
 func scrapeTeamsMode(data *RCEData) {
-	log.Println("Scraping teams mode - requires existing data...")
-	// Load existing data if available
-	if err := loadExistingData(data, *outputFile); err != nil {
-		log.Printf("No existing data found: %v\n", err)
+	log.Println("Scraping teams mode...")
+
+	// Ensure teams map is initialized
+	if data.Teams == nil {
+		data.Teams = make(map[string]Team)
 	}
 
 	if len(data.Teams) == 0 {
-		log.Println("No teams found in existing data. Scraping from events...")
-		events := scrapeEventPages()
-		data.Events = events
-		extractBotsAndTeamsFromEvents(data)
+		log.Println("No teams found in existing data. Need to scrape from events first...")
+		log.Println("Tip: Run with -mode=events first to gather team IDs")
+		return
 	}
 
-	log.Println("Scraping detailed team information...")
+	log.Printf("Updating detailed information for %d teams...\n", len(data.Teams))
 	scrapeTeamDetails(data)
 }
 
@@ -789,6 +828,54 @@ func extractBotsFromRankings(data *RCEData) {
 	}
 }
 
+// mergeBotsFromRankings merges bot data from the provided rankings map into existing data
+func mergeBotsFromRankings(data *RCEData, rankings map[string][]Bot) {
+	for _, rankBots := range rankings {
+		for _, bot := range rankBots {
+			if bot.ID != "" {
+				if existing, exists := data.Bots[bot.ID]; exists {
+					// Merge ranking data with existing bot data
+					existing.Rank = bot.Rank
+					existing.Points = bot.Points
+					existing.WeightClass = bot.WeightClass
+					if existing.ImageURL == "" {
+						existing.ImageURL = bot.ImageURL
+					}
+					if existing.Team == "" && bot.Team != "" {
+						existing.Team = bot.Team
+						existing.TeamID = bot.TeamID
+						existing.TeamURL = bot.TeamURL
+					}
+					data.Bots[bot.ID] = existing
+				} else {
+					// Add new bot from rankings
+					data.Bots[bot.ID] = bot
+				}
+
+				// Extract team from bot (merge with existing)
+				if bot.TeamID != "" {
+					if existing, exists := data.Teams[bot.TeamID]; exists {
+						// Keep existing team data, just ensure ID is set
+						if existing.ID == "" {
+							existing.ID = bot.TeamID
+							existing.Name = bot.Team
+							existing.URL = bot.TeamURL
+							data.Teams[bot.TeamID] = existing
+						}
+					} else {
+						// Add new team
+						data.Teams[bot.TeamID] = Team{
+							ID:   bot.TeamID,
+							Name: bot.Team,
+							URL:  bot.TeamURL,
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
 // filterBotsWithRankings filters bots to only include those with rankings in the latest season
 func filterBotsWithRankings(data *RCEData) {
 	if !*onlyRanked {
@@ -840,6 +927,7 @@ func scrapeBotDetails(data *RCEData) {
 	filterBotsWithRankings(data)
 
 	count := 0
+	skipped := 0
 	total := len(data.Bots)
 
 	// Use semaphore for concurrent requests
@@ -852,6 +940,16 @@ func scrapeBotDetails(data *RCEData) {
 			continue
 		}
 
+		// Skip bots that already have detailed information (history and description)
+		// unless their ranking data might need updating
+		if len(bot.History) > 0 && bot.Description != "" && len(bot.Weapons) > 0 {
+			skipped++
+			if *verbose {
+				log.Printf("Skipping bot %s - already has detailed information\n", bot.Name)
+			}
+			continue
+		}
+
 		count++
 		wg.Add(1)
 
@@ -860,7 +958,7 @@ func scrapeBotDetails(data *RCEData) {
 			sem <- struct{}{}        // Acquire
 			defer func() { <-sem }() // Release
 
-			log.Printf("Scraping bot %d/%d: %s\n", idx, total, botData.Name)
+			log.Printf("Scraping bot %d/%d: %s\n", idx, total-skipped, botData.Name)
 
 			doc, err := fetchDocument(botData.URL)
 			if err != nil {
@@ -952,10 +1050,16 @@ func scrapeBotDetails(data *RCEData) {
 	}
 
 	wg.Wait()
+
+	if skipped > 0 {
+		log.Printf("Skipped %d bots that already have detailed information\n", skipped)
+	}
+	log.Printf("Updated detailed information for %d bots\n", count)
 }
 
 func scrapeTeamDetails(data *RCEData) {
 	count := 0
+	skipped := 0
 	total := len(data.Teams)
 
 	// Use semaphore for concurrent requests
@@ -968,6 +1072,15 @@ func scrapeTeamDetails(data *RCEData) {
 			continue
 		}
 
+		// Skip teams that already have detailed information (logo and bot list)
+		if team.LogoURL != "" && len(team.BotIDs) > 0 {
+			skipped++
+			if *verbose {
+				log.Printf("Skipping team %s - already has detailed information\n", team.Name)
+			}
+			continue
+		}
+
 		count++
 		wg.Add(1)
 
@@ -976,7 +1089,7 @@ func scrapeTeamDetails(data *RCEData) {
 			sem <- struct{}{}        // Acquire
 			defer func() { <-sem }() // Release
 
-			log.Printf("Scraping team %d/%d: %s\n", idx, total, teamData.Name)
+			log.Printf("Scraping team %d/%d: %s\n", idx, total-skipped, teamData.Name)
 
 			doc, err := fetchDocument(teamData.URL)
 			if err != nil {
@@ -1029,6 +1142,11 @@ func scrapeTeamDetails(data *RCEData) {
 	}
 
 	wg.Wait()
+
+	if skipped > 0 {
+		log.Printf("Skipped %d teams that already have detailed information\n", skipped)
+	}
+	log.Printf("Updated detailed information for %d teams\n", count)
 }
 
 func loadExistingData(data *RCEData, filename string) error {
