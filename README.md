@@ -64,4 +64,3 @@ The backend will automatically serve the frontend build in production.
 ## Acknowledgments
 
 Data sourced from Robot Combat Events
-

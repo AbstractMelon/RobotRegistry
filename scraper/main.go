@@ -95,13 +95,19 @@ type BotHistory struct {
 
 // Team represents a team/group
 type Team struct {
-	ID       string   `json:"id"`
-	Name     string   `json:"name"`
-	URL      string   `json:"url"`
-	LogoURL  string   `json:"logo_url"`
-	BotIDs   []string `json:"bot_ids"`
-	BotNames []string `json:"bot_names"`
-	BotURLs  []string `json:"bot_urls"`
+	ID          string   `json:"id"`
+	Name        string   `json:"name"`
+	URL         string   `json:"url"`
+	LogoURL     string   `json:"logo_url"`
+	Description string   `json:"description,omitempty"`
+	Website     string   `json:"website,omitempty"`
+	Email       string   `json:"email,omitempty"`
+	Phone       string   `json:"phone,omitempty"`
+	Address     string   `json:"address,omitempty"`
+	Members     []string `json:"members,omitempty"`
+	BotIDs      []string `json:"bot_ids"`
+	BotNames    []string `json:"bot_names"`
+	BotURLs     []string `json:"bot_urls"`
 }
 
 // RCEData holds all scraped data
@@ -148,6 +154,7 @@ var (
 	endYear       = flag.Int("end-year", 0, "End year for historical rankings (default: current season year)")
 	onlyRanked    = flag.Bool("only-ranked", true, "Only scrape bots with rankings in the latest season")
 	verbose       = flag.Bool("verbose", false, "Enable verbose logging")
+	onlyCompeting = flag.Bool("only-competing", false, "Only scrape bots that are currently competing in events")
 )
 
 func main() {
@@ -164,9 +171,12 @@ func main() {
 
 	log.Println("Starting RCE scraper...")
 	log.Printf("Mode: %s, Output: %s\n", *scrapeMode, *outputFile)
-	log.Printf("Current season year: %d, Only ranked: %v\n", seasonYear, *onlyRanked)
+	log.Printf("Current season year: %d, Only ranked: %v, Only competing: %v\n", seasonYear, *onlyRanked, *onlyCompeting)
 	if !*onlyRanked {
 		log.Println("Note: Scraping ALL bots (not just ranked ones)")
+	}
+	if *onlyCompeting {
+		log.Println("Note: Only scraping bots currently competing in events")
 	}
 
 	// Initialize data structure
@@ -922,9 +932,45 @@ func filterBotsWithRankings(data *RCEData) {
 	data.Bots = filteredBots
 }
 
+func filterCompetingBots(data *RCEData) {
+	if !*onlyCompeting {
+		return
+	}
+
+	competingBotIDs := make(map[string]bool)
+
+	// Find all bots currently competing in events
+	for _, event := range data.Events {
+		for _, comp := range event.Competitions {
+			for _, p := range comp.Participants {
+				if p.BotID != "" {
+					competingBotIDs[p.BotID] = true
+				}
+			}
+		}
+	}
+
+	// Filter bots map to only include competing bots
+	filteredBots := make(map[string]Bot)
+	for id, bot := range data.Bots {
+		if competingBotIDs[id] {
+			filteredBots[id] = bot
+		}
+	}
+
+	if *verbose {
+		log.Printf("Filtered bots: %d competing in events out of %d total\n",
+			len(filteredBots), len(data.Bots))
+	}
+
+	data.Bots = filteredBots
+}
+
 func scrapeBotDetails(data *RCEData) {
 	// Apply ranking filter if enabled
 	filterBotsWithRankings(data)
+	// Apply competing filter if enabled
+	filterCompetingBots(data)
 
 	count := 0
 	skipped := 0
@@ -1072,8 +1118,8 @@ func scrapeTeamDetails(data *RCEData) {
 			continue
 		}
 
-		// Skip teams that already have detailed information (logo and bot list)
-		if team.LogoURL != "" && len(team.BotIDs) > 0 {
+		// Skip teams that already have detailed information
+		if team.LogoURL != "" && len(team.BotIDs) > 0 && team.Description != "" {
 			skipped++
 			if *verbose {
 				log.Printf("Skipping team %s - already has detailed information\n", team.Name)
@@ -1093,11 +1139,12 @@ func scrapeTeamDetails(data *RCEData) {
 
 			doc, err := fetchDocument(teamData.URL)
 			if err != nil {
-				log.Printf("Error fetching team details: %v\n", err)
+				log.Printf("Error fetching team details for %s: %v\n", teamData.Name, err)
 				time.Sleep(requestDelay / 2)
 				return
 			}
 
+			// Extract logo image
 			if img := doc.Find(".logo img, .team-logo img").First(); img.Length() > 0 {
 				if imgSrc, exists := img.Attr("src"); exists {
 					if strings.HasPrefix(imgSrc, "http") {
@@ -1108,28 +1155,72 @@ func scrapeTeamDetails(data *RCEData) {
 				}
 			}
 
-			doc.Find(".text-left h3 a, .bot-list a, a[href*='/resources/']").Each(func(i int, s *goquery.Selection) {
-				botName := strings.TrimSpace(s.Text())
-				botURL, exists := s.Attr("href")
-				if !exists || !strings.Contains(botURL, "/resources/") {
-					return
+			// Extract description
+			if descBox := doc.Find(".event-description").First(); descBox.Length() > 0 {
+				teamData.Description = strings.TrimSpace(descBox.Text())
+			}
+
+			// Extract contact information from the h3 elements
+			doc.Find(".text-left h3").Each(func(i int, s *goquery.Selection) {
+				text := strings.TrimSpace(s.Text())
+
+				if strings.Contains(text, "Web Address:") {
+					teamData.Website = strings.TrimSpace(strings.TrimPrefix(text, "Web Address:"))
+				} else if strings.Contains(text, "Contact Email:") {
+					teamData.Email = strings.TrimSpace(strings.TrimPrefix(text, "Contact Email:"))
+				} else if strings.Contains(text, "Contact Phone") {
+					teamData.Phone = strings.TrimSpace(strings.TrimPrefix(text, "Contact Phone"))
+				} else if strings.Contains(text, "Address:") {
+					teamData.Address = strings.TrimSpace(strings.TrimPrefix(text, "Address:"))
 				}
+			})
 
-				fullURL := baseURL + botURL
-
-				re := regexp.MustCompile(`/resources/(\d+)`)
-				matches := re.FindStringSubmatch(botURL)
-				var botID string
-				if len(matches) > 1 {
-					botID = matches[1]
+			// Extract team members - look for "Team members" section
+			doc.Find(".grunge-box").Each(func(i int, box *goquery.Selection) {
+				if strings.Contains(box.Find("h2").Text(), "Team members") {
+					box.Find(".text-left h3").Each(func(j int, member *goquery.Selection) {
+						memberName := strings.TrimSpace(member.Text())
+						if memberName != "" && !contains(teamData.Members, memberName) {
+							teamData.Members = append(teamData.Members, memberName)
+						}
+					})
 				}
+			})
 
-				if botName != "" && !contains(teamData.BotNames, botName) {
-					teamData.BotNames = append(teamData.BotNames, botName)
-					teamData.BotURLs = append(teamData.BotURLs, fullURL)
-					if botID != "" {
-						teamData.BotIDs = append(teamData.BotIDs, botID)
-					}
+			// Extract bots - look for "Bots" section
+			doc.Find(".grunge-box").Each(func(i int, box *goquery.Selection) {
+				if strings.Contains(box.Find("h2").Text(), "Bots") {
+					box.Find(".text-left h3 a, a[href*='/resources/']").Each(func(j int, s *goquery.Selection) {
+						botName := strings.TrimSpace(s.Text())
+						botURL, exists := s.Attr("href")
+						if !exists || !strings.Contains(botURL, "/resources/") {
+							return
+						}
+
+						// Make sure it's a full URL
+						var fullURL string
+						if strings.HasPrefix(botURL, "http") {
+							fullURL = botURL
+						} else {
+							fullURL = baseURL + botURL
+						}
+
+						// Extract bot ID from URL
+						re := regexp.MustCompile(`/resources/(\d+)`)
+						matches := re.FindStringSubmatch(botURL)
+						var botID string
+						if len(matches) > 1 {
+							botID = matches[1]
+						}
+
+						if botName != "" && !contains(teamData.BotNames, botName) {
+							teamData.BotNames = append(teamData.BotNames, botName)
+							teamData.BotURLs = append(teamData.BotURLs, fullURL)
+							if botID != "" {
+								teamData.BotIDs = append(teamData.BotIDs, botID)
+							}
+						}
+					})
 				}
 			})
 
