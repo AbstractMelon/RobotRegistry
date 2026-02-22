@@ -50,3 +50,5 @@ go.work.sum
 .vscode
 
 reference/
+tmp/
+testdata/
