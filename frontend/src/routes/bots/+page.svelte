@@ -86,16 +86,16 @@
 
 <div class="space-y-6">
 	<div class="flex justify-between items-center">
-		<h1 class="text-4xl font-bold text-gray-900 dark:text-gray-100">Bots</h1>
-		<div class="text-sm text-gray-600 dark:text-gray-400">
+		<h1 class="text-4xl font-bold text-stone-900 dark:text-stone-100">Bots</h1>
+		<div class="text-sm text-stone-600 dark:text-stone-400">
 			{totalItems} bots found
 		</div>
 	</div>
 
-	<div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 space-y-4">
+	<div class="bg-white dark:bg-stone-800 rounded-lg shadow p-6 space-y-4">
 		<div class="flex flex-wrap gap-4">
 			<div class="flex-1 min-w-[200px]">
-				<label for="search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+				<label for="search" class="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-1">
 					Search
 				</label>
 				<input
@@ -104,21 +104,21 @@
 					bind:value={searchQuery}
 					onchange={handleFilterChange}
 					placeholder="Search bots..."
-					class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-					       bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+					class="w-full px-3 py-2 border border-stone-300 dark:border-stone-600 rounded-lg 
+					       bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100"
 				/>
 			</div>
 
 			<div class="flex-1 min-w-[200px]">
-				<label for="year" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+				<label for="year" class="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-1">
 					Year
 				</label>
 				<select
 					id="year"
 					bind:value={yearFilter}
 					onchange={handleFilterChange}
-					class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-						bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+					class="w-full px-3 py-2 border border-stone-300 dark:border-stone-600 rounded-lg 
+						bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100"
 				>
 					{#each availableYears as year}
 						<option value={year}>{year}</option>
@@ -127,15 +127,15 @@
 			</div>
 
 			<div class="flex-1 min-w-[200px]">
-				<label for="weight-class" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+				<label for="weight-class" class="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-1">
 					Weight Class
 				</label>
 				<select
 					id="weight-class"
 					bind:value={weightClassFilter}
 					onchange={handleFilterChange}
-					class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-						bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+					class="w-full px-3 py-2 border border-stone-300 dark:border-stone-600 rounded-lg 
+						bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100"
 				>
 					<option value="">All weight classes</option>
 					{#each weightClasses as weightClass}
@@ -146,7 +146,7 @@
 			</div>
 
 			<div class="flex-1 min-w-[200px]">
-				<label for="weapon" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+				<label for="weapon" class="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-1">
 					Weapon
 				</label>
 				<input
@@ -155,8 +155,8 @@
 					bind:value={weaponFilter}
 					onchange={handleFilterChange}
 					placeholder="Filter by weapon"
-					class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-					       bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+					class="w-full px-3 py-2 border border-stone-300 dark:border-stone-600 rounded-lg 
+					       bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100"
 				/>
 			</div>
 		</div>
@@ -168,7 +168,7 @@
 		<ErrorMessage message={error} />
 	{:else if bots.length === 0}
 		<div class="text-center py-12">
-			<p class="text-gray-600 dark:text-gray-400">No bots found</p>
+			<p class="text-stone-600 dark:text-stone-400">No bots found</p>
 		</div>
 	{:else}
 		<div class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-6">
@@ -179,28 +179,28 @@
 							<img src={bot.image_url} alt={bot.name} class="w-full h-48 object-cover rounded mb-4" />
 						{/if}
 						<div class="flex items-center justify-between mb-2">
-							<h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
+							<h3 class="text-xl font-semibold text-stone-900 dark:text-stone-100">
 								{bot.name}
 							</h3>
 							{#if bot.rank}
-								<span class="text-xl font-bold text-blue-600 dark:text-blue-400">
+								<span class="text-xl font-bold text-orange-600 dark:text-orange-400">
 									#{bot.rank}
 								</span>
 							{/if}
 						</div>
-						<p class="text-sm text-gray-600 dark:text-gray-400 mb-1">
+						<p class="text-sm text-stone-600 dark:text-stone-400 mb-1">
 							{bot.weight_class}
 						</p>
-						<p class="text-sm text-gray-500 dark:text-gray-500">
+						<p class="text-sm text-stone-500 dark:text-stone-500">
 							{bot.points} points
 						</p>
-						<p class="text-sm text-gray-500 dark:text-gray-500 mt-1">
+						<p class="text-sm text-stone-500 dark:text-stone-500 mt-1">
 							Team: {bot.team}
 						</p>
 						{#if bot.weapons && bot.weapons.length > 0}
 							<div class="mt-2 flex flex-wrap gap-1">
 								{#each bot.weapons.slice(0, 3) as weapon}
-									<span class="px-2 py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs rounded">
+									<span class="px-2 py-1 bg-stone-200 dark:bg-stone-700 text-stone-700 dark:text-stone-300 text-xs rounded">
 										{weapon}
 									</span>
 								{/each}

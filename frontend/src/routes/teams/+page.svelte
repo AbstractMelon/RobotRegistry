@@ -47,8 +47,8 @@
 
 <div class="space-y-6">
 	<div class="flex justify-between items-center">
-		<h1 class="text-4xl font-bold text-gray-900 dark:text-gray-100">Teams</h1>
-		<div class="text-sm text-gray-600 dark:text-gray-400">
+		<h1 class="text-4xl font-bold text-stone-900 dark:text-stone-100">Teams</h1>
+		<div class="text-sm text-stone-600 dark:text-stone-400">
 			{totalItems} teams found
 		</div>
 	</div>
@@ -59,7 +59,7 @@
 		<ErrorMessage message={error} />
 	{:else if teams.length === 0}
 		<div class="text-center py-12">
-			<p class="text-gray-600 dark:text-gray-400">No teams found</p>
+			<p class="text-stone-600 dark:text-stone-400">No teams found</p>
 		</div>
 	{:else}
 		<div class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-6">
@@ -69,10 +69,10 @@
 						{#if team.logo_url}
 							<img src={team.logo_url} alt={team.name} class="w-full h-32 object-contain mb-4" />
 						{/if}
-						<h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+						<h3 class="text-xl font-semibold text-stone-900 dark:text-stone-100 mb-2">
 							{team.name}
 						</h3>
-						<p class="text-sm text-gray-600 dark:text-gray-400">
+						<p class="text-sm text-stone-600 dark:text-stone-400">
 							{team.bot_ids?.length || 0} bots
 						</p>
 					</div>

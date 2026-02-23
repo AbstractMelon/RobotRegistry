@@ -2,8 +2,9 @@
 	export let href: string = '';
 	export let hoverable: boolean = true;
 
-	const baseClasses = 'bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border border-gray-200 dark:border-gray-700';
-	const hoverClasses = hoverable ? 'hover:shadow-lg transition-shadow duration-200' : '';
+	const baseClasses =
+		'bg-white dark:bg-stone-900 rounded-lg overflow-hidden border border-stone-200/80 dark:border-stone-800 shadow-sm';
+	const hoverClasses = hoverable ? 'hover:shadow-md transition-shadow duration-200' : '';
 	
 	$: classes = `${baseClasses} ${hoverClasses}`;
 </script>

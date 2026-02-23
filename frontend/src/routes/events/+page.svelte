@@ -80,16 +80,16 @@
 
 <div class="space-y-6">
 	<div class="flex justify-between items-center">
-		<h1 class="text-4xl font-bold text-gray-900 dark:text-gray-100">Events</h1>
-		<div class="text-sm text-gray-600 dark:text-gray-400">
+		<h1 class="text-4xl font-bold text-stone-900 dark:text-stone-100">Events</h1>
+		<div class="text-sm text-stone-600 dark:text-stone-400">
 			{totalItems} events found
 		</div>
 	</div>
 
-	<div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 space-y-4">
+	<div class="bg-white dark:bg-stone-800 rounded-xl shadow p-6 space-y-4">
 		<div class="flex flex-wrap gap-4">
 			<div class="flex-1 min-w-[200px]">
-				<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+				<label class="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-1">
 					Location
 				</label>
 				<input
@@ -97,20 +97,20 @@
 					bind:value={locationFilter}
 					on:change={handleFilterChange}
 					placeholder="Filter by location"
-					class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-					       bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+					class="w-full px-3 py-2 border border-stone-300 dark:border-stone-600 rounded-xl 
+					       bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100"
 				/>
 			</div>
 
 			<div class="flex-1 min-w-[200px]">
-				<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+				<label class="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-1">
 					Weight Class
 				</label>
 				<select
 					bind:value={weightClassFilter}
 					on:change={handleFilterChange}
-					class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-						bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+					class="w-full px-3 py-2 border border-stone-300 dark:border-stone-600 rounded-xl 
+						bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100"
 				>
 					<option value="">All weight classes</option>
 					{#each weightClasses as weightClass}
@@ -123,25 +123,25 @@
 		<div class="flex space-x-2">
 			<button
 				on:click={() => { viewMode = 'upcoming'; handleFilterChange(); }}
-				class="px-4 py-2 rounded-lg {viewMode === 'upcoming' 
-					? 'bg-blue-600 text-white' 
-					: 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100'}"
+				class="px-4 py-2 rounded-xl {viewMode === 'upcoming' 
+					? 'bg-orange-600 text-white' 
+					: 'bg-stone-200 dark:bg-stone-700 text-stone-900 dark:text-stone-100'}"
 			>
 				Upcoming
 			</button>
 			<button
 				on:click={() => { viewMode = 'past'; handleFilterChange(); }}
-				class="px-4 py-2 rounded-lg {viewMode === 'past' 
-					? 'bg-blue-600 text-white' 
-					: 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100'}"
+				class="px-4 py-2 rounded-xl {viewMode === 'past' 
+					? 'bg-orange-600 text-white' 
+					: 'bg-stone-200 dark:bg-stone-700 text-stone-900 dark:text-stone-100'}"
 			>
 				Past
 			</button>
 			<button
 				on:click={() => { viewMode = 'all'; handleFilterChange(); }}
-				class="px-4 py-2 rounded-lg {viewMode === 'all' 
-					? 'bg-blue-600 text-white' 
-					: 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100'}"
+				class="px-4 py-2 rounded-xl {viewMode === 'all' 
+					? 'bg-orange-600 text-white' 
+					: 'bg-stone-200 dark:bg-stone-700 text-stone-900 dark:text-stone-100'}"
 			>
 				All
 			</button>
@@ -154,7 +154,7 @@
 		<ErrorMessage message={error} />
 	{:else if events.length === 0}
 		<div class="text-center py-12">
-			<p class="text-gray-600 dark:text-gray-400">No events found</p>
+			<p class="text-stone-600 dark:text-stone-400">No events found</p>
 		</div>
 	{:else}
 		<div class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-6">
@@ -164,16 +164,16 @@
 						{#if event.logo_url}
 							<img src={event.logo_url} alt={event.name} class="w-full h-32 object-contain mb-4" />
 						{/if}
-						<h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+						<h3 class="text-xl font-semibold text-stone-900 dark:text-stone-100 mb-2">
 							{event.name}
 						</h3>
-						<p class="text-sm text-gray-600 dark:text-gray-400 mb-1">
+						<p class="text-sm text-stone-600 dark:text-stone-400 mb-1">
 							{event.location}
 						</p>
-						<p class="text-sm text-gray-500 dark:text-gray-500">
+						<p class="text-sm text-stone-500 dark:text-stone-500">
 							{event.start_date} {event.end_date && event.end_date !== event.start_date ? `- ${event.end_date}` : ''}
 						</p>
-						<p class="text-sm text-gray-500 dark:text-gray-500 mt-2">
+						<p class="text-sm text-stone-500 dark:text-stone-500 mt-2">
 							{event.bots_count} bots registered
 						</p>
 					</div>

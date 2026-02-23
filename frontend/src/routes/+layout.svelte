@@ -28,30 +28,31 @@
 	}
 </script>
 
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
-	<nav class="bg-white dark:bg-gray-800 shadow-lg border-b border-gray-200 dark:border-gray-700">
+
+<div class="min-h-screen flex flex-col bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-100 transition-colors">
+	<nav class="bg-white dark:bg-stone-900 border-b border-stone-200/70 dark:border-stone-800">
 		<div class="mx-auto px-4 sm:px-6 lg:px-8">
 			<div class="flex justify-between h-16">
 				<div class="flex items-center space-x-8">
-					<a href="/" class="flex items-center space-x-2">
-						<span class="text-2xl font-bold text-blue-600 dark:text-blue-400">Robot Registry</span>
+					<a href="/" class="flex items-center gap-3">
+						<img src="/logo.svg" alt="Robot Registry" class="h-7 w-auto" />
 					</a>
 					<div class="hidden md:flex space-x-4">
-						<a href="/events" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Events</a>
-						<a href="/bots" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Bots</a>
-						<a href="/teams" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Teams</a>
-						<a href="/rankings" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Rankings</a>
+						<a href="/events" class="px-3 py-2 rounded-lg text-sm font-medium text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800">Events</a>
+						<a href="/bots" class="px-3 py-2 rounded-lg text-sm font-medium text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800">Bots</a>
+						<a href="/teams" class="px-3 py-2 rounded-lg text-sm font-medium text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800">Teams</a>
+						<a href="/rankings" class="px-3 py-2 rounded-lg text-sm font-medium text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800">Rankings</a>
 					</div>
 				</div>
 				<div class="flex items-center space-x-4">
-					<a href="/search" class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100">
+					<a href="/search" class="rounded-lg p-2 text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800" aria-label="Search">
 						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
 						</svg>
 					</a>
 					<button
-						on:click={toggleDarkMode}
-						class="p-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+						onclick={toggleDarkMode}
+						class="p-2 rounded-lg text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800"
 						aria-label="Toggle dark mode"
 					>
 						{#if darkMode}
@@ -69,13 +70,13 @@
 		</div>
 	</nav>
 
-	<main class="mx-auto px-4 lg:px-8 py-8">
+	<main class="mx-auto w-full flex-1 px-4 lg:px-8 py-8">
 		{@render children()}
 	</main>
 
-	<footer class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-12">
+	<footer class="mt-auto bg-white dark:bg-stone-900 border-t border-stone-200/70 dark:border-stone-800">
 		<div class="mx-auto px-4 lg:px-8 py-8">
-			<p class="text-center text-gray-600 dark:text-gray-400 text-sm">
+			<p class="text-center text-stone-600 dark:text-stone-400 text-sm">
 				Data sourced from Robot Combat Events
 			</p>
 		</div>

@@ -4,7 +4,7 @@
 
 <div class="flex items-center justify-center p-8">
 	<div class="flex flex-col items-center space-y-4">
-		<div class="w-12 h-12 border-4 border-blue-200 dark:border-blue-900 border-t-blue-600 dark:border-t-blue-400 rounded-full animate-spin"></div>
-		<p class="text-gray-600 dark:text-gray-400 text-sm">{text}</p>
+		<div class="w-12 h-12 border-4 border-orange-200 dark:border-orange-950 border-t-orange-600 dark:border-t-orange-400 rounded-full animate-spin"></div>
+		<p class="text-stone-600 dark:text-stone-400 text-sm">{text}</p>
 	</div>
 </div>

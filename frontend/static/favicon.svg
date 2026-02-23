@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="64"
+   height="64"
+   viewBox="0 0 64 64"
+   role="img"
+   aria-label="Robot Registry"
+   version="1.1"
+   id="svg1"
+   sodipodi:docname="favicon.svg"
+   inkscape:version="1.4.3 (0d15f75042, 2025-12-25)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1" />
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#505050"
+     bordercolor="#ffffff"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="1"
+     inkscape:deskcolor="#505050"
+     inkscape:zoom="9.0703125"
+     inkscape:cx="28.609819"
+     inkscape:cy="16.041344"
+     inkscape:window-width="2560"
+     inkscape:window-height="1370"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg1" />
+  <text
+     xml:space="preserve"
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:65.5676px;line-height:1.2;font-family:'Font Awesome 7 Brands';-inkscape-font-specification:'Font Awesome 7 Brands';text-align:center;writing-mode:lr-tb;direction:ltr;text-anchor:middle;fill:#ffffff;stroke:#f35604;stroke-width:2.86504;stroke-linejoin:round;stroke-dasharray:none"
+     x="31.987503"
+     y="56.467552"
+     id="text1"><tspan
+       sodipodi:role="line"
+       id="tspan1"
+       x="31.987503"
+       y="56.467552"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Font Awesome 7 Brands';-inkscape-font-specification:'Font Awesome 7 Brands';stroke-width:2.86504;stroke-dasharray:none">R</tspan></text>
+</svg>

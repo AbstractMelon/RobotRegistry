@@ -45,7 +45,7 @@
 	<ErrorMessage message={error} />
 {:else if event}
 	<div class="space-y-8">
-		<div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
+		<div class="bg-white dark:bg-stone-800 rounded-lg shadow-lg p-8">
 			<div class="flex flex-col md:flex-row gap-8">
 				{#if event.logo_url}
 					<div class="md:w-64">
@@ -53,10 +53,10 @@
 					</div>
 				{/if}
 				<div class="flex-1">
-					<h1 class="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+					<h1 class="text-4xl font-bold text-stone-900 dark:text-stone-100 mb-4">
 						{event.name}
 					</h1>
-					<div class="space-y-2 text-gray-600 dark:text-gray-400">
+					<div class="space-y-2 text-stone-600 dark:text-stone-400">
 						<p class="text-lg">
 							<span class="font-medium">Location:</span> {event.location}
 						</p>
@@ -75,7 +75,7 @@
 					</div>
 					
 					{#if event.description}
-						<div class="mt-4 text-gray-700 dark:text-gray-300">
+						<div class="mt-4 text-stone-700 dark:text-stone-300">
 							<p class="font-medium mb-2">About this event:</p>
 							<p class="text-sm leading-relaxed">{event.description}</p>
 						</div>
@@ -86,7 +86,7 @@
 							href={event.url}
 							target="_blank"
 							rel="noopener noreferrer"
-							class="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+							class="inline-block px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
 						>
 							View on Robot Combat Events
 						</a>
@@ -95,7 +95,7 @@
 								href={event.website}
 								target="_blank"
 								rel="noopener noreferrer"
-								class="inline-block px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+								class="inline-block px-6 py-3 bg-stone-600 text-white rounded-lg hover:bg-stone-700 transition-colors"
 							>
 								Event Website
 							</a>
@@ -106,7 +106,7 @@
 		</div>
 
 		<div>
-			<h2 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">Competitions</h2>
+			<h2 class="text-3xl font-bold text-stone-900 dark:text-stone-100 mb-6">Competitions</h2>
 			{#if event.competitions && event.competitions.length > 0}
 				<div class="space-y-6">
 					{#each event.competitions as competition}
@@ -114,10 +114,10 @@
 							<div class="p-6">
 								<div class="flex justify-between items-start mb-4">
 									<div>
-										<h3 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+										<h3 class="text-2xl font-semibold text-stone-900 dark:text-stone-100">
 											{competition.name}
 										</h3>
-										<p class="text-gray-600 dark:text-gray-400 mt-1">
+										<p class="text-stone-600 dark:text-stone-400 mt-1">
 											{competition.weight_class}
 										</p>
 									</div>
@@ -125,7 +125,7 @@
 										href={competition.url}
 										target="_blank"
 										rel="noopener noreferrer"
-										class="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700"
+										class="px-4 py-2 bg-orange-600 text-white text-sm rounded-lg hover:bg-orange-700"
 									>
 										Register
 									</a>
@@ -133,38 +133,38 @@
 
 								<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 text-sm">
 									<div>
-										<span class="text-gray-500 dark:text-gray-400">Date:</span>
-										<p class="text-gray-900 dark:text-gray-100">{competition.date || 'TBA'}</p>
+										<span class="text-stone-500 dark:text-stone-400">Date:</span>
+										<p class="text-stone-900 dark:text-stone-100">{competition.date || 'TBA'}</p>
 									</div>
 									<div>
-										<span class="text-gray-500 dark:text-gray-400">Time:</span>
-										<p class="text-gray-900 dark:text-gray-100">
+										<span class="text-stone-500 dark:text-stone-400">Time:</span>
+										<p class="text-stone-900 dark:text-stone-100">
 											{competition.begin_time || 'TBA'}
 											{competition.end_time ? `- ${competition.end_time}` : ''}
 										</p>
 									</div>
 									<div>
-										<span class="text-gray-500 dark:text-gray-400">Participants:</span>
-										<p class="text-gray-900 dark:text-gray-100">
+										<span class="text-stone-500 dark:text-stone-400">Participants:</span>
+										<p class="text-stone-900 dark:text-stone-100">
 											{competition.participants?.length || 0} / {competition.max_combatants || '∞'}
 										</p>
 									</div>
 									<div>
-										<span class="text-gray-500 dark:text-gray-400">Fee:</span>
-										<p class="text-gray-900 dark:text-gray-100">{competition.registration_fee || 'N/A'}</p>
+										<span class="text-stone-500 dark:text-stone-400">Fee:</span>
+										<p class="text-stone-900 dark:text-stone-100">{competition.registration_fee || 'N/A'}</p>
 									</div>
 								</div>
 
 								{#if competition.participants && competition.participants.length > 0}
 									<div>
-										<h4 class="font-medium text-gray-900 dark:text-gray-100 mb-3">
+										<h4 class="font-medium text-stone-900 dark:text-stone-100 mb-3">
 											Registered Bots ({competition.participants.length})
 										</h4>
 										<div class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-3">
 											{#each competition.participants as participant}
 												<a
 													href="/bots/{participant.bot_id}"
-													class="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+													class="flex items-center space-x-3 p-3 bg-stone-50 dark:bg-stone-700 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-600 transition-colors"
 												>
 													{#if participant.bot_image}
 														<img
@@ -174,10 +174,10 @@
 														/>
 													{/if}
 													<div class="flex-1 min-w-0">
-														<p class="font-medium text-gray-900 dark:text-gray-100 truncate">
+														<p class="font-medium text-stone-900 dark:text-stone-100 truncate">
 															{participant.bot_name}
 														</p>
-														<p class="text-sm text-gray-600 dark:text-gray-400 truncate">
+														<p class="text-sm text-stone-600 dark:text-stone-400 truncate">
 															{participant.team_name}
 														</p>
 													</div>
@@ -191,7 +191,7 @@
 					{/each}
 				</div>
 			{:else}
-				<p class="text-gray-600 dark:text-gray-400">No competitions listed</p>
+				<p class="text-stone-600 dark:text-stone-400">No competitions listed</p>
 			{/if}
 		</div>
 	</div>
