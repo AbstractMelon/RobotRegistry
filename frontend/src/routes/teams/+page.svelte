@@ -73,7 +73,7 @@
 							{team.name}
 						</h3>
 						<p class="text-sm text-stone-600 dark:text-stone-400">
-							{team.bot_ids?.length || 0} bots
+							{team.bot_count ?? team.bot_ids?.length ?? 0} bots
 						</p>
 					</div>
 				</Card>

@@ -56,6 +56,32 @@
 					<p class="text-lg text-stone-600 dark:text-stone-400 mb-4">
 						{team.bot_ids?.length || 0} bots
 					</p>
+					{#if team.description}
+						<p class="text-stone-700 dark:text-stone-300 leading-relaxed whitespace-pre-line mb-4">
+							{team.description}
+						</p>
+					{/if}
+					{#if team.website || team.email || team.phone || team.address}
+						<div class="text-sm text-stone-600 dark:text-stone-400 space-y-1 mb-4">
+							{#if team.website}
+								<p>
+									<span class="font-medium">Website:</span>
+									<a class="text-orange-600 dark:text-orange-400 hover:underline" href={team.website} target="_blank" rel="noopener noreferrer">
+										{team.website}
+									</a>
+								</p>
+							{/if}
+							{#if team.email}
+								<p><span class="font-medium">Email:</span> {team.email}</p>
+							{/if}
+							{#if team.phone}
+								<p><span class="font-medium">Phone:</span> {team.phone}</p>
+							{/if}
+							{#if team.address}
+								<p><span class="font-medium">Address:</span> {team.address}</p>
+							{/if}
+						</div>
+					{/if}
 					<a
 						href={team.url}
 						target="_blank"
@@ -67,6 +93,19 @@
 				</div>
 			</div>
 		</div>
+
+		{#if team.members && team.members.length > 0}
+			<Card>
+				<div class="p-6">
+					<h2 class="text-2xl font-bold text-stone-900 dark:text-stone-100 mb-4">Team members</h2>
+					<ul class="space-y-1 text-stone-700 dark:text-stone-300">
+						{#each team.members as member}
+							<li>{member}</li>
+						{/each}
+					</ul>
+				</div>
+			</Card>
+		{/if}
 
 		<div>
 			<h2 class="text-3xl font-bold text-stone-900 dark:text-stone-100 mb-6">Team Roster</h2>

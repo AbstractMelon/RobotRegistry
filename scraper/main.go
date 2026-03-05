@@ -474,7 +474,21 @@ func scrapeEventDetails(event *Event) {
 	}
 
 	// Extract event description
-	event.Description = strings.TrimSpace(doc.Find(".grunge-box .event-description, .event-body p").First().Text())
+	descSel := doc.Find(".grunge-box .event-description, .event-body .event-description, .event-body").First()
+	if descSel.Length() > 0 {
+		var paragraphs []string
+		descSel.Find("p").Each(func(_ int, p *goquery.Selection) {
+			text := strings.TrimSpace(p.Text())
+			if text != "" {
+				paragraphs = append(paragraphs, text)
+			}
+		})
+		if len(paragraphs) > 0 {
+			event.Description = strings.Join(paragraphs, "\n\n")
+		} else {
+			event.Description = strings.TrimSpace(descSel.Text())
+		}
+	}
 
 	// Extract organizer info
 	event.Organizer = strings.TrimSpace(doc.Find(".organizer-info, .event-organizer").Text())
@@ -1261,29 +1275,61 @@ func contains(slice []string, item string) bool {
 }
 
 func fetchDocument(url string) (*goquery.Document, error) {
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return nil, err
-	}
+	var lastErr error
+	for attempt := 0; attempt < 6; attempt++ {
+		req, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			return nil, err
+		}
+		req.Header.Set("User-Agent", userAgent)
 
-	req.Header.Set("User-Agent", userAgent)
+		resp, err := client.Do(req)
+		if err != nil {
+			lastErr = err
+			time.Sleep(time.Second * time.Duration(1<<attempt))
+			continue
+		}
 
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
+		if resp.StatusCode == 200 {
+			doc, err := goquery.NewDocumentFromReader(resp.Body)
+			resp.Body.Close()
+			if err != nil {
+				lastErr = err
+				time.Sleep(time.Second * time.Duration(1<<attempt))
+				continue
+			}
+			return doc, nil
+		}
+		resp.Body.Close()
 
-	if resp.StatusCode != 200 {
+		if resp.StatusCode == http.StatusTooManyRequests {
+			wait := 15 * time.Second
+			if ra := strings.TrimSpace(resp.Header.Get("Retry-After")); ra != "" {
+				if seconds, err := strconv.Atoi(ra); err == nil && seconds > 0 {
+					wait = time.Duration(seconds) * time.Second
+				} else if t, err := http.ParseTime(ra); err == nil {
+					if d := time.Until(t); d > 0 {
+						wait = d
+					}
+				}
+			}
+			lastErr = fmt.Errorf("status code error: %d %s", resp.StatusCode, resp.Status)
+			time.Sleep(wait)
+			continue
+		}
+
+		if resp.StatusCode >= 500 && resp.StatusCode <= 599 {
+			lastErr = fmt.Errorf("status code error: %d %s", resp.StatusCode, resp.Status)
+			time.Sleep(time.Second * time.Duration(1<<attempt))
+			continue
+		}
+
 		return nil, fmt.Errorf("status code error: %d %s", resp.StatusCode, resp.Status)
 	}
-
-	doc, err := goquery.NewDocumentFromReader(resp.Body)
-	if err != nil {
-		return nil, err
+	if lastErr == nil {
+		lastErr = fmt.Errorf("status code error")
 	}
-
-	return doc, nil
+	return nil, lastErr
 }
 
 func saveToJSON(data RCEData, filename string) error {

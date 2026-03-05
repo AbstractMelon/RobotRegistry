@@ -58,7 +58,7 @@ func main() {
 
 	router := mux.NewRouter()
 
-	handler := api.NewHandler(db)
+	handler := api.NewHandler(db, dataPath)
 	handler.RegisterRoutes(router)
 
 	frontendPath := os.Getenv("FRONTEND_PATH")

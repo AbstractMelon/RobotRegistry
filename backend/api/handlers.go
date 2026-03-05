@@ -1,21 +1,28 @@
 package api
 
 import (
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/abstractmelon/robotregistry/backend/database"
 	"github.com/abstractmelon/robotregistry/backend/models"
+	"github.com/abstractmelon/robotregistry/backend/scrape"
 	"github.com/gorilla/mux"
 )
 
 type Handler struct {
-	DB *database.DB
+	DB        *database.DB
+	Refresher *RefreshService
+	AdminJobs *AdminJobManager
+	DataPath  string
 }
 
-func NewHandler(db *database.DB) *Handler {
-	return &Handler{DB: db}
+func NewHandler(db *database.DB, dataPath string) *Handler {
+	return &Handler{DB: db, Refresher: NewRefreshService(db), DataPath: dataPath}
 }
 
 func (h *Handler) RegisterRoutes(r *mux.Router) {
@@ -30,6 +37,13 @@ func (h *Handler) RegisterRoutes(r *mux.Router) {
 	r.HandleFunc("/api/rankings/years", h.GetYears).Methods("GET")
 	r.HandleFunc("/api/rankings/weight-classes", h.GetWeightClasses).Methods("GET")
 	r.HandleFunc("/api/search", h.Search).Methods("GET")
+
+	// Admin controls (no auth yet)
+	r.HandleFunc("/api/admin/jobs", h.AdminStartJob).Methods("POST")
+	r.HandleFunc("/api/admin/jobs", h.AdminListJobs).Methods("GET")
+	r.HandleFunc("/api/admin/jobs/{id}", h.AdminGetJob).Methods("GET")
+	r.HandleFunc("/api/admin/jobs/{id}/cancel", h.AdminCancelJob).Methods("POST")
+	r.HandleFunc("/api/admin/scrape-url", h.AdminScrapeURL).Methods("POST")
 }
 
 func (h *Handler) GetEvents(w http.ResponseWriter, r *http.Request) {
@@ -71,6 +85,10 @@ func (h *Handler) GetEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if h.Refresher != nil {
+		h.Refresher.MaybeRefreshEvent(id)
+	}
+
 	respondJSON(w, http.StatusOK, event)
 }
 
@@ -82,6 +100,10 @@ func (h *Handler) GetCompetition(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		respondError(w, http.StatusNotFound, "Competition not found")
 		return
+	}
+
+	if h.Refresher != nil {
+		h.Refresher.MaybeRefreshCompetition(id)
 	}
 
 	respondJSON(w, http.StatusOK, competition)
@@ -122,8 +144,27 @@ func (h *Handler) GetBot(w http.ResponseWriter, r *http.Request) {
 
 	bot, err := h.DB.GetBotByID(id)
 	if err != nil {
+		// If missing, try a best-effort scrape so direct links work even before a full import.
+		if errors.Is(err, sql.ErrNoRows) {
+			url := scrape.BaseURL + "/resources/" + id
+			scraped, scrapeErr := scrape.ScrapeBot(url)
+			if scrapeErr == nil {
+				_ = h.DB.UpsertBot(scraped, time.Now())
+				if refreshed, dbErr := h.DB.GetBotByID(id); dbErr == nil {
+					bot = refreshed
+					respondJSON(w, http.StatusOK, bot)
+					return
+				}
+				respondJSON(w, http.StatusOK, scraped)
+				return
+			}
+		}
 		respondError(w, http.StatusNotFound, "Bot not found")
 		return
+	}
+
+	if h.Refresher != nil {
+		h.Refresher.MaybeRefreshBot(id)
 	}
 
 	respondJSON(w, http.StatusOK, bot)
@@ -158,6 +199,18 @@ func (h *Handler) GetTeam(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		respondError(w, http.StatusNotFound, "Team not found")
 		return
+	}
+
+	// If the team is present but incomplete (no roster), scrape now so the UI has data immediately.
+	if len(team.BotIDs) == 0 && len(team.BotNames) == 0 {
+		_ = h.refreshTeamNow(id)
+		if refreshed, err := h.DB.GetTeamByID(id); err == nil {
+			team = refreshed
+		}
+	}
+
+	if h.Refresher != nil {
+		h.Refresher.MaybeRefreshTeam(id)
 	}
 
 	respondJSON(w, http.StatusOK, team)

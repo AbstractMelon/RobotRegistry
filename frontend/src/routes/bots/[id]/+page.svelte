@@ -41,7 +41,7 @@
 				selectedYear = bot.rankings[0].year;
 			}
 		} catch (err) {
-			error = 'Failed to load bot';
+			error = err instanceof Error ? err.message : 'Failed to load bot';
 			console.error(err);
 		} finally {
 			loading = false;

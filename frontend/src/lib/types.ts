@@ -10,6 +10,7 @@ export interface Event {
 	bots_count: number;
 	logo_url: string;
 	description?: string;
+	description_html?: string;
 	website?: string;
 	organizer?: string;
 	competitions?: Competition[];
@@ -82,6 +83,13 @@ export interface Team {
 	name: string;
 	url: string;
 	logo_url: string;
+	description?: string;
+	website?: string;
+	email?: string;
+	phone?: string;
+	address?: string;
+	members?: string[];
+	bot_count?: number;
 	bot_ids: string[];
 	bot_names: string[];
 	bot_urls: string[];
@@ -143,3 +151,20 @@ export interface BotFilters {
 	weapon?: string;
 	year?: string;
 }
+
+export type AdminJobState = 'running' | 'completed' | 'failed' | 'cancelled';
+export type AdminJob = {
+	id: string;
+	kind: string;
+	state: AdminJobState;
+	total: number;
+	done: number;
+	failed: number;
+	current?: string;
+	year?: string;
+	include_bots?: boolean;
+	cancel_requested?: boolean;
+	started_at: string;
+	updated_at: string;
+	logs: string[];
+};

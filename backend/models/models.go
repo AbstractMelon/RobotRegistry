@@ -3,20 +3,21 @@ package models
 import "time"
 
 type Event struct {
-	ID           string        `json:"id"`
-	Name         string        `json:"name"`
-	URL          string        `json:"url"`
-	StartDate    string        `json:"start_date"`
-	EndDate      string        `json:"end_date"`
-	Location     string        `json:"location"`
-	Latitude     string        `json:"latitude,omitempty"`
-	Longitude    string        `json:"longitude,omitempty"`
-	BotsCount    int           `json:"bots_count"`
-	LogoURL      string        `json:"logo_url"`
-	Description  string        `json:"description,omitempty"`
-	Website      string        `json:"website,omitempty"`
-	Organizer    string        `json:"organizer,omitempty"`
-	Competitions []Competition `json:"competitions,omitempty"`
+	ID              string        `json:"id"`
+	Name            string        `json:"name"`
+	URL             string        `json:"url"`
+	StartDate       string        `json:"start_date"`
+	EndDate         string        `json:"end_date"`
+	Location        string        `json:"location"`
+	Latitude        string        `json:"latitude,omitempty"`
+	Longitude       string        `json:"longitude,omitempty"`
+	BotsCount       int           `json:"bots_count"`
+	LogoURL         string        `json:"logo_url"`
+	Description     string        `json:"description,omitempty"`
+	DescriptionHTML string        `json:"description_html,omitempty"`
+	Website         string        `json:"website,omitempty"`
+	Organizer       string        `json:"organizer,omitempty"`
+	Competitions    []Competition `json:"competitions,omitempty"`
 }
 
 type Competition struct {
@@ -82,13 +83,20 @@ type BotHistory struct {
 }
 
 type Team struct {
-	ID       string   `json:"id"`
-	Name     string   `json:"name"`
-	URL      string   `json:"url"`
-	LogoURL  string   `json:"logo_url"`
-	BotIDs   []string `json:"bot_ids"`
-	BotNames []string `json:"bot_names"`
-	BotURLs  []string `json:"bot_urls"`
+	ID          string   `json:"id"`
+	Name        string   `json:"name"`
+	URL         string   `json:"url"`
+	LogoURL     string   `json:"logo_url"`
+	Description string   `json:"description,omitempty"`
+	Website     string   `json:"website,omitempty"`
+	Email       string   `json:"email,omitempty"`
+	Phone       string   `json:"phone,omitempty"`
+	Address     string   `json:"address,omitempty"`
+	Members     []string `json:"members,omitempty"`
+	BotCount    int      `json:"bot_count,omitempty"`
+	BotIDs      []string `json:"bot_ids"`
+	BotNames    []string `json:"bot_names"`
+	BotURLs     []string `json:"bot_urls"`
 }
 
 type RankingBot struct {
@@ -105,12 +113,12 @@ type RankingBot struct {
 }
 
 type ScrapedData struct {
-	Events     []Event                 `json:"events"`
-	Bots       map[string]Bot          `json:"bots"`
-	Teams      map[string]Team         `json:"teams"`
-	Rankings   map[string][]RankingBot `json:"rankings"`
-	ScrapedAt  time.Time               `json:"scraped_at"`
-	TotalPages int                     `json:"total_pages"`
+	Events     []Event          `json:"events"`
+	Bots       map[string]Bot   `json:"bots"`
+	Teams      map[string]Team  `json:"teams"`
+	Rankings   map[string][]Bot `json:"rankings"`
+	ScrapedAt  time.Time        `json:"scraped_at"`
+	TotalPages int              `json:"total_pages"`
 }
 
 type SearchResult struct {

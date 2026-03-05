@@ -74,10 +74,14 @@
 						{/if}
 					</div>
 					
-					{#if event.description}
+					{#if event.description_html || event.description}
 						<div class="mt-4 text-stone-700 dark:text-stone-300">
 							<p class="font-medium mb-2">About this event:</p>
-							<p class="text-sm leading-relaxed">{event.description}</p>
+							{#if event.description_html}
+								<div class="rce-content text-sm leading-relaxed">{@html event.description_html}</div>
+							{:else}
+								<p class="text-sm leading-relaxed whitespace-pre-line">{event.description}</p>
+							{/if}
 						</div>
 					{/if}
 					

@@ -1,1 +1,36 @@
 @import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer components {
+	.rce-content :where(h1, h2, h3, h4) {
+		@apply text-stone-900 dark:text-stone-100 font-semibold;
+	}
+	.rce-content :where(h1) {
+		@apply text-xl mt-4;
+	}
+	.rce-content :where(h2) {
+		@apply text-lg mt-4;
+	}
+	.rce-content :where(h3, h4) {
+		@apply text-base mt-3;
+	}
+	.rce-content :where(p) {
+		@apply mt-2;
+	}
+	.rce-content :where(ul, ol) {
+		@apply mt-2 ml-5;
+	}
+	.rce-content :where(ul) {
+		list-style: disc;
+	}
+	.rce-content :where(ol) {
+		list-style: decimal;
+	}
+	.rce-content :where(li) {
+		@apply mt-1;
+	}
+	.rce-content :where(a) {
+		@apply text-orange-700 dark:text-orange-400 underline underline-offset-2;
+	}
+}
