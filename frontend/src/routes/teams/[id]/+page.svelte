@@ -10,6 +10,7 @@
 	let team: Team | null = $state(null);
 	let loading = $state(true);
 	let error = $state('');
+	let backgroundRefreshing = $state(false);
 
 	$effect(() => {
 		const teamId = $page.params.id;
@@ -30,6 +31,33 @@
 			loading = false;
 		}
 	}
+
+	async function refreshTeamSilently(id: string) {
+		if (loading || backgroundRefreshing) return;
+		backgroundRefreshing = true;
+		try {
+			const refreshed = await getTeam(id);
+			if (JSON.stringify(team) !== JSON.stringify(refreshed)) {
+				team = refreshed;
+			}
+		} catch {
+		} finally {
+			backgroundRefreshing = false;
+		}
+	}
+
+	onMount(() => {
+		const interval = window.setInterval(() => {
+			const teamId = $page.params.id;
+			if (teamId) {
+				void refreshTeamSilently(teamId);
+			}
+		}, 5000);
+
+		return () => {
+			window.clearInterval(interval);
+		};
+	});
 </script>
 
 <svelte:head>

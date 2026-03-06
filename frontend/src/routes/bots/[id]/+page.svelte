@@ -10,6 +10,7 @@
 	let bot: Bot | null = $state(null);
 	let loading = $state(true);
 	let error = $state('');
+	let backgroundRefreshing = $state(false);
 	let availableYears: string[] = $state([]);
 	let selectedYear = $state('');
 
@@ -20,15 +21,28 @@
 		}
 	});
 
-	onMount(async () => {
-		try {
-			availableYears = await getAvailableYears();
-			if (availableYears.length > 0) {
-				selectedYear = availableYears[0]; // Default to latest year
+	onMount(() => {
+		void (async () => {
+			try {
+				availableYears = await getAvailableYears();
+				if (availableYears.length > 0) {
+					selectedYear = availableYears[0];
+				}
+			} catch (err) {
+				console.error('Failed to load years', err);
 			}
-		} catch (err) {
-			console.error('Failed to load years', err);
-		}
+		})();
+
+		const interval = window.setInterval(() => {
+			const botId = $page.params.id;
+			if (botId) {
+				void refreshBotSilently(botId);
+			}
+		}, 5000);
+
+		return () => {
+			window.clearInterval(interval);
+		};
 	});
 
 	async function loadBot(id: string) {
@@ -45,6 +59,26 @@
 			console.error(err);
 		} finally {
 			loading = false;
+		}
+	}
+
+	async function refreshBotSilently(id: string) {
+		if (loading || backgroundRefreshing) return;
+		backgroundRefreshing = true;
+		try {
+			const refreshed = await getBot(id);
+			if (JSON.stringify(bot) !== JSON.stringify(refreshed)) {
+				const previousYear = selectedYear;
+				bot = refreshed;
+				if (previousYear && refreshed.rankings?.some((r: BotRanking) => r.year === previousYear)) {
+					selectedYear = previousYear;
+				} else if (refreshed.rankings && refreshed.rankings.length > 0) {
+					selectedYear = refreshed.rankings[0].year;
+				}
+			}
+		} catch {
+		} finally {
+			backgroundRefreshing = false;
 		}
 	}
 
@@ -71,7 +105,7 @@
 			<div class="p-8">
 				<div class="flex flex-col md:flex-row gap-6">
 					{#if bot.image_url}
-						<div class="flex-shrink-0 w-auto h-full max-w-xl rounded overflow-hidden bg-stone-100">
+						<div class="shrink-0 w-auto h-full max-w-xl rounded overflow-hidden bg-stone-100">
 							<img src={bot.image_url} alt={bot.name} class="w-full h-full object-contain" />
 						</div>
 					{/if}

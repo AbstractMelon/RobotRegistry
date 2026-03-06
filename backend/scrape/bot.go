@@ -1,6 +1,7 @@
 package scrape
 
 import (
+	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -46,45 +47,36 @@ func ScrapeBot(url string) (*models.Bot, error) {
 		}
 	}
 
+	yearLinks := make(map[string]string)
 	doc.Find(".resource-body-history-item a").Each(func(_ int, s *goquery.Selection) {
 		y := strings.TrimSpace(s.Text())
 		if y == "" {
 			return
 		}
+		yearExists := false
 		for _, existing := range bot.Years {
 			if existing == y {
-				return
+				yearExists = true
+				break
 			}
 		}
-		bot.Years = append(bot.Years, y)
-	})
-
-	doc.Find(".resource-history-body-table tbody tr").Each(func(_ int, s *goquery.Selection) {
-		var h models.BotHistory
-
-		eventLink := s.Find("td:nth-child(1) a")
-		h.EventName = strings.TrimSpace(eventLink.Text())
-		if href, ok := eventLink.Attr("href"); ok {
-			h.EventURL = absoluteURL(href)
+		if !yearExists {
+			bot.Years = append(bot.Years, y)
 		}
-
-		placeLink := s.Find("td:nth-child(2) a")
-		h.Place = strings.TrimSpace(placeLink.Text())
-		if href, ok := placeLink.Attr("href"); ok {
-			h.CompetitionURL = absoluteURL(href)
-		}
-
-		pointsText := strings.TrimSpace(s.Find("td:nth-child(3)").Text())
-		if pointsText != "" {
-			if p, err := strconv.ParseFloat(pointsText, 64); err == nil {
-				h.Points = p
-			}
-		}
-
-		if h.EventName != "" {
-			bot.History = append(bot.History, h)
+		if href, ok := s.Attr("href"); ok {
+			yearLinks[y] = absoluteURL(href)
 		}
 	})
+
+	seenHistory := make(map[string]struct{})
+	bot.History = appendUniqueHistory(bot.History, parseBotHistoryRows(doc), seenHistory)
+	for _, yearURL := range yearLinks {
+		yearDoc, err := fetchDocument(yearURL)
+		if err != nil {
+			continue
+		}
+		bot.History = appendUniqueHistory(bot.History, parseBotHistoryRows(yearDoc), seenHistory)
+	}
 
 	doc.Find(".resource-body-characteristics-item").Each(func(_ int, s *goquery.Selection) {
 		weapon := strings.TrimSpace(s.Text())
@@ -111,4 +103,56 @@ func ScrapeBot(url string) (*models.Bot, error) {
 	}
 
 	return bot, nil
+}
+
+func parseBotHistoryRows(doc *goquery.Document) []models.BotHistory {
+	var history []models.BotHistory
+	doc.Find(".resource-history-body-table tbody tr").Each(func(_ int, s *goquery.Selection) {
+		var h models.BotHistory
+
+		eventLink := s.Find("td:nth-child(1) a")
+		h.EventName = strings.TrimSpace(eventLink.Text())
+		if href, ok := eventLink.Attr("href"); ok {
+			h.EventURL = absoluteURL(href)
+		}
+
+		placeLink := s.Find("td:nth-child(2) a")
+		h.Place = strings.TrimSpace(placeLink.Text())
+		if href, ok := placeLink.Attr("href"); ok {
+			h.CompetitionURL = absoluteURL(href)
+		}
+
+		pointsText := strings.TrimSpace(s.Find("td:nth-child(3)").Text())
+		if pointsText != "" {
+			if p, err := strconv.ParseFloat(pointsText, 64); err == nil {
+				h.Points = p
+			}
+		}
+
+		if h.EventName != "" {
+			history = append(history, h)
+		}
+	})
+	return history
+}
+
+func appendUniqueHistory(existing []models.BotHistory, incoming []models.BotHistory, seen map[string]struct{}) []models.BotHistory {
+	for _, h := range existing {
+		seen[historyKey(h)] = struct{}{}
+	}
+
+	for _, h := range incoming {
+		key := historyKey(h)
+		if _, ok := seen[key]; ok {
+			continue
+		}
+		existing = append(existing, h)
+		seen[key] = struct{}{}
+	}
+
+	return existing
+}
+
+func historyKey(h models.BotHistory) string {
+	return fmt.Sprintf("%s|%s|%s|%.6f", strings.TrimSpace(h.EventName), strings.TrimSpace(h.EventURL), strings.TrimSpace(h.CompetitionURL), h.Points)
 }

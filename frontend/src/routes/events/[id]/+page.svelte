@@ -10,12 +10,23 @@
 	let event: Event | null = $state(null);
 	let loading = $state(true);
 	let error = $state('');
+	let backgroundRefreshing = $state(false);
 
 	// derive the eventId from the page store
 	let eventId = $derived($page.params.id);
 
-	onMount(async () => {
-		await loadEvent();
+	onMount(() => {
+		void loadEvent();
+
+		const interval = window.setInterval(() => {
+			if (eventId) {
+				void refreshEventSilently(eventId);
+			}
+		}, 5000);
+
+		return () => {
+			window.clearInterval(interval);
+		};
 	});
 
 	async function loadEvent() {
@@ -30,6 +41,20 @@
 			console.error(err);
 		} finally {
 			loading = false;
+		}
+	}
+
+	async function refreshEventSilently(id: string) {
+		if (loading || backgroundRefreshing) return;
+		backgroundRefreshing = true;
+		try {
+			const refreshed = await getEvent(id);
+			if (JSON.stringify(event) !== JSON.stringify(refreshed)) {
+				event = refreshed;
+			}
+		} catch {
+		} finally {
+			backgroundRefreshing = false;
 		}
 	}
 </script>
